@@ -1,0 +1,65 @@
+---
+- name: Ensure apt is updated and packages are managed
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Update the apt cache
+      apt:
+        update_cache: yes
+
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist
+
+    - name: Ensure required packages are installed
+      apt:
+        name:
+          - git
+          - htop
+          - neovim
+        state: present 
+    - name: Add Google Cloud SDK apt repository
+      apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main"
+      state: present
+
+    - name: Add Google Cloud public key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        keyring: /usr/share/keyrings/cloud.google.gpg
+
+    - name: Update apt cache after adding Google Cloud SDK repository
+      apt:
+        update_cache: yes
+
+    - name: Install Google Cloud SDK
+      apt:
+        name: google-cloud-sdk
+        state: present 
+
+    - name: Ensure AWS CLI dependencies are installed
+      apt:
+        name:
+          - unzip
+          - curl
+        state: present
+
+    - name: Download AWS CLI installer
+      get_url:
+        url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+        dest: /tmp/awscliv2.zip
+
+    - name: Unzip AWS CLI installer
+      unarchive:
+        src: /tmp/awscliv2.zip
+        dest: /tmp/
+        remote_src: yes
+
+    - name: Install AWS CLI
+      command: /tmp/aws/install
+
+    - name: Verify AWS CLI installation
+      command: aws --version
+      register: aws_cli_version
+      ignore_errors: yes
