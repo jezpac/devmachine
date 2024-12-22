@@ -46,19 +46,27 @@
           - curl
         state: present
 
-    - name: Download AWS CLI installer
+    - name: Check if AWS CLI is installed
+      command: aws --version
+      register: aws_cli_check
+      ignore_errors: yes
+
+    - name: Download AWS CLI installer if not installed
       get_url:
         url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
         dest: /tmp/awscliv2.zip
+      when: aws_cli_check.rc != 0
 
-    - name: Unzip AWS CLI installer
+    - name: Unzip AWS CLI installer if not installed
       unarchive:
         src: /tmp/awscliv2.zip
         dest: /tmp/
         remote_src: yes
+      when: aws_cli_check.rc != 0
 
-    - name: Install AWS CLI
+    - name: Install AWS CLI if not installed
       command: /tmp/aws/install
+      when: aws_cli_check.rc != 0
 
     - name: Verify AWS CLI installation
       command: aws --version
