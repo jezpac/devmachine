@@ -153,7 +153,7 @@
       register: devbox_check
 
     - name: Install Devbox using curl script
-      shell: curl -fsSL https://get.jetpack.io/devbox | bash
+      shell: curl -fsSL https://get.jetpack.io/devbox -o install-devbox.sh && chmod +x ./install-devbox.sh && FORCE=1 ./install-devbox.sh
       when: not devbox_check.stat.exists
 
     - name: Verify Devbox installation
