@@ -21,6 +21,7 @@
           - git
           - htop
           - neovim
+          - make
         state: present 
     - name: Add Google Cloud SDK apt repository keyring
       shell: |
