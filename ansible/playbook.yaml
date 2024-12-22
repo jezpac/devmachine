@@ -157,4 +157,4 @@
       when: not devbox_check.stat.exists
 
     - name: Copying bash aliases     
-      copy: src=../bash_aliases dest=~/.bash_aliases
+      copy: src=bash_aliases dest=~/.bash_aliases
