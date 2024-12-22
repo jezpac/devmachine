@@ -22,6 +22,8 @@
           - htop
           - neovim
           - make
+          - build-essential
+
         state: present 
     - name: Add Google Cloud SDK apt repository keyring
       shell: |
@@ -143,3 +145,22 @@
       debug:
         msg: |
           Docker Compose: {{ docker_compose_check.stdout | default('Not available') }}
+
+    # Devbox Installation
+    - name: Check if Devbox is installed
+      stat:
+        path: /usr/local/bin/devbox
+      register: devbox_check
+
+    - name: Install Devbox using curl script
+      shell: curl -fsSL https://get.jetpack.io/devbox | bash
+      when: not devbox_check.stat.exists
+
+    - name: Verify Devbox installation
+      command: devbox --version
+      register: devbox_version_check
+      ignore_errors: yes
+
+    - name: Display Devbox version
+      debug:
+        msg: "{{ devbox_version_check.stdout | default('Devbox is not installed') }}"
