@@ -2,6 +2,8 @@
 - name: Ensure apt is updated and packages are managed
   hosts: all
   become: yes
+  vars:
+    current_user: "{{ ansible_env.USER }}"  # Automatically detects the current user
 
   tasks:
     - name: Update the apt cache
@@ -74,3 +76,69 @@
       command: aws --version
       register: aws_cli_version
       ignore_errors: yes
+
+    - name: Ensure Docker dependencies are installed
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+
+    - name: Add Docker GPG key
+      shell: |
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+      args:
+        creates: /usr/share/keyrings/docker-archive-keyring.gpg
+
+    - name: Add Docker apt repository
+      apt_repository:
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+        state: present
+
+    - name: Update apt cache after adding Docker repository
+      apt:
+        update_cache: yes
+
+    - name: Install Docker CE
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+
+    - name: Check if user is already in the docker group
+      shell: id -nG "{{ current_user }}" | grep -qw docker
+      register: user_in_docker_group
+      failed_when: false  # Avoid marking the task as failed if grep doesn't find the group
+      changed_when: false  # This task is not considered changed
+
+    - name: Add current user to the docker group if not already a member
+      user:
+        name: "{{ current_user }}"
+        groups: docker
+        append: yes
+      when:
+        - current_user != "root"
+        - user_in_docker_group.rc != 0  # Only run if the user is not already in the group
+
+    - name: Check if Docker is installed
+      command: docker --version
+      register: docker_version_check
+      ignore_errors: yes
+
+    - name: Display Docker version
+      debug:
+        msg: "{{ docker_version_check.stdout }}"
+
+    - name: Check if Docker Compose is available
+      command: docker compose version
+      register: docker_compose_check
+      ignore_errors: yes
+
+    - name: Display Docker Compose version
+      debug:
+        msg: |
+          Docker Compose: {{ docker_compose_check.stdout | default('Not available') }}
