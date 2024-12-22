@@ -7,6 +7,7 @@
     - name: Update the apt cache
       apt:
         update_cache: yes
+        cache_valid_time: 3600
 
     - name: Upgrade all packages
       apt:
@@ -33,6 +34,7 @@
     - name: Update apt cache after adding Google Cloud SDK repository
       apt:
         update_cache: yes
+        cache_valid_time: 3600
 
     - name: Install Google Cloud SDK
       apt:
