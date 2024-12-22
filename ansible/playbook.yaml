@@ -22,7 +22,7 @@
     - name: Add Google Cloud SDK apt repository
       apt_repository:
         repo: "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main"
-      state: present
+        state: present
 
     - name: Add Google Cloud public key
       apt_key:
