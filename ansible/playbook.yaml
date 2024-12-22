@@ -156,3 +156,5 @@
       shell: curl -fsSL https://get.jetpack.io/devbox -o install-devbox.sh && chmod +x ./install-devbox.sh && FORCE=1 ./install-devbox.sh
       when: not devbox_check.stat.exists
 
+    - name: Copying bash aliases     
+      copy: src=../tasks/.bash_aliases dest=~/.bash_aliases
