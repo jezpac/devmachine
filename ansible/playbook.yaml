@@ -26,9 +26,7 @@
           - neovim
           - make
           - build-essential
-          - rustup
           - rustc
-          - cargo
           - tmux
 
 
