@@ -1,13 +1,13 @@
 ---
 - name: Ensure apt is updated and packages are managed
   hosts: all
-  become: yes
   vars:
     current_user: "{{ ansible_env.USER }}"  # Automatically detects the current user
     ssh_key_path: "{{ ansible_env.HOME }}/.ssh/id_rsa"  # Path to the private SSH key
 
   tasks:
     - name: Update the apt cache
+      become: yes
       apt:
         update_cache: yes
         cache_valid_time: 3600
