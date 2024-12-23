@@ -26,6 +26,11 @@
           - neovim
           - make
           - build-essential
+          - rustup
+          - rustc
+          - cargo
+          - tmux
+
 
         state: present 
     - name: Add Google Cloud SDK apt repository keyring
@@ -186,6 +191,39 @@
         mode: '0644'
       when: not bash_aliases_check.stat.exists | default(false) 
 
+    - name: Check if Zellij is installed
+      command: which zellij
+      register: zellij_check
+      failed_when: false  # Prevent failure if Zellij is not installed
+      changed_when: false  # This task does not change the system
+
+    - name: Install Zellij if not present
+      command: cargo install zellij --locked
+        args:
+          creates: ~/.cargo/bin/zellij  # Prevent re-installation
+      when: zellij_check.rc != 0  # Run only if Zellij is not found
+
+    - name: Check if LunarVim is installed
+      stat:
+        path: "{{ lunarvim_install_dir }}"
+      register: lunarvim_check
+
+    - name: Install LunarVim if not present
+      shell: |
+        bash <(curl -s https://raw.githubusercontent.com/LunarVim/LunarVim/master/utils/installer/install.sh)
+      args:
+        executable: /bin/bash
+      when: not lunarvim_check.stat.exists
+
+    - name: Verify LunarVim installation
+      command: lvim --version
+      register: lunarvim_version_check
+      ignore_errors: yes
+
+    - name: Display LunarVim version
+      debug:
+        msg: "{{ lunarvim_version_check.stdout | default('LunarVim is not installed or failed to install') }}"
+
 
     - name: Check if SSH private key exists
       stat:
@@ -204,6 +242,7 @@
         group: "{{ ansible_env.USER }}"
         mode: '0644'
       when: not ssh_config_check.stat.exists | default(false)
+
 
     - name: Check if ~/.ssh/config exists
       stat:
