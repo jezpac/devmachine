@@ -13,10 +13,12 @@
         cache_valid_time: 3600
 
     - name: Upgrade all packages
+      become: yes
       apt:
         upgrade: dist
 
     - name: Ensure required packages are installed
+      become: yes
       apt:
         name:
           - git
@@ -27,27 +29,32 @@
 
         state: present 
     - name: Add Google Cloud SDK apt repository keyring
+      become: yes
       shell: |
         curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
       args:
         creates: /usr/share/keyrings/cloud.google.gpg
 
     - name: Add Google Cloud SDK apt repository
+      become: yes
       apt_repository:
         repo: "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main"
         state: present
 
     - name: Update apt cache after adding Google Cloud SDK repository
+      become: yes
       apt:
         update_cache: yes
         cache_valid_time: 3600
 
     - name: Install Google Cloud SDK
+      become: yes
       apt:
         name: google-cloud-sdk
         state: present 
 
     - name: Ensure AWS CLI dependencies are installed
+      become: yes
       apt:
         name:
           - unzip
@@ -73,6 +80,7 @@
       when: aws_cli_check.rc != 0
 
     - name: Install AWS CLI if not installed
+      become: yes
       command: /tmp/aws/install
       when: aws_cli_check.rc != 0
 
@@ -82,6 +90,7 @@
       ignore_errors: yes
 
     - name: Ensure Docker dependencies are installed
+      become: yes
       apt:
         name:
           - apt-transport-https
@@ -91,21 +100,25 @@
         state: present
 
     - name: Add Docker GPG key
+      become: yes
       shell: |
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
       args:
         creates: /usr/share/keyrings/docker-archive-keyring.gpg
 
     - name: Add Docker apt repository
+      become: yes
       apt_repository:
         repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
         state: present
 
     - name: Update apt cache after adding Docker repository
+      become: yes
       apt:
         update_cache: yes
 
     - name: Install Docker CE
+      become: yes
       apt:
         name:
           - docker-ce
@@ -114,12 +127,14 @@
         state: present
 
     - name: Check if user is already in the docker group
+      become: yes
       shell: id -nG "{{ current_user }}" | grep -qw docker
       register: user_in_docker_group
       failed_when: false  # Avoid marking the task as failed if grep doesn't find the group
       changed_when: false  # This task is not considered changed
 
     - name: Add current user to the docker group if not already a member
+      become: yes 
       user:
         name: "{{ current_user }}"
         groups: docker
