@@ -4,6 +4,7 @@
   vars:
     current_user: "{{ ansible_env.USER }}"  # Automatically detects the current user
     ssh_key_path: "{{ ansible_env.HOME }}/.ssh/id_rsa"  # Path to the private SSH key
+    lunarvim_install_dir: "{{ lookup('env', 'HOME') }}/.local/bin/lvim"  # Default LunarVim binary path
 
   tasks:
     - name: Update the apt cache
