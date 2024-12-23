@@ -199,7 +199,7 @@
 
     - name: Install Zellij if not present
       command: cargo install zellij --locked
-        args:
+      args:
           creates: ~/.cargo/bin/zellij  # Prevent re-installation
       when: zellij_check.rc != 0  # Run only if Zellij is not found
 
