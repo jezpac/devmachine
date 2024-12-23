@@ -202,27 +202,6 @@
           creates: ~/.cargo/bin/zellij  # Prevent re-installation
       when: zellij_check.rc != 0  # Run only if Zellij is not found
 
-    - name: Check if LunarVim is installed
-      stat:
-        path: "{{ lunarvim_install_dir }}"
-      register: lunarvim_check
-
-    - name: Install LunarVim if not present
-      shell: |
-        bash <(curl -s https://raw.githubusercontent.com/LunarVim/LunarVim/master/utils/installer/install.sh)
-      args:
-        executable: /bin/bash
-      when: not lunarvim_check.stat.exists
-
-    - name: Verify LunarVim installation
-      command: lvim --version
-      register: lunarvim_version_check
-      ignore_errors: yes
-
-    - name: Display LunarVim version
-      debug:
-        msg: "{{ lunarvim_version_check.stdout | default('LunarVim is not installed or failed to install') }}"
-
 
     - name: Check if SSH private key exists
       stat:
