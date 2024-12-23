@@ -159,17 +159,17 @@
 
     - name: Check if ~/.bash_aliases exists
       stat:
-        path: ~/.bash_aliases
+        path: "{{ ansible_env.HOME }}/.bash_aliases"
       register: bash_aliases_check
 
     - name: Copy bash_aliases file if it does not already exist
       copy:
         src: ../bash_aliases  # Replace with the source path of your bash_aliases file
-        dest: ~/.bash_aliases
+        dest: "{{ ansible_env.HOME }}/.bash_aliases"
         owner: "{{ ansible_env.USER }}"
         group: "{{ ansible_env.USER }}"
         mode: '0644'
-      when: not bash_aliases_check.stat.exists
+      when: not bash_aliases_check.stat.exists | default(false) 
 
 
     - name: Check if SSH private key exists
