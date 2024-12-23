@@ -4,6 +4,7 @@
   become: yes
   vars:
     current_user: "{{ ansible_env.USER }}"  # Automatically detects the current user
+    ssh_key_path: "{{ ansible_env.HOME }}/.ssh/id_rsa"  # Path to the private SSH key
 
   tasks:
     - name: Update the apt cache
@@ -156,5 +157,52 @@
       shell: curl -fsSL https://get.jetpack.io/devbox -o install-devbox.sh && chmod +x ./install-devbox.sh && FORCE=1 ./install-devbox.sh && chmod 755 /usr/local/bin/devbox
       when: not devbox_check.stat.exists
 
-    - name: Copying bash aliases     
-      copy: src=bash_aliases dest=~/.bash_aliases
+
+    - name: Copy bash_aliases file if it does not already exist
+      copy:
+        src: ../bash_aliases  # Replace with the source path of your bash_aliases file
+        dest: ~/.bash_aliases
+        owner: "{{ ansible_env.USER }}"
+        group: "{{ ansible_env.USER }}"
+        mode: '0644'
+      when: not bash_aliases_check.stat.exists
+
+    - name: Check if ~/.bash_aliases exists
+      stat:
+        path: ~/.bash_aliases
+      register: bash_aliases_check
+
+    - name: Check if SSH private key exists
+      stat:
+        path: "{{ ssh_key_path }}"
+      register: ssh_key_check
+
+    - name: Generate SSH key pair if not present
+      command: ssh-keygen -t rsa -b 4096 -f "{{ ssh_key_path }}" -N ""
+      when: not ssh_key_check.stat.exists
+
+    - name: Copy ssh config file if it does not already exist
+      copy:
+        src: ../ssh-config  # Replace with the source path of your bash_aliases file
+        dest: ~/.ssh/config
+        owner: "{{ ansible_env.USER }}"
+        group: "{{ ansible_env.USER }}"
+        mode: '0644'
+      when: not ssh_config_check.stat.exists
+
+    - name: Check if ~/.ssh/config exists
+      stat:
+        path: ~/.bash_aliases
+      register: ssh_config_check
+
+    - name: Read public SSH key
+      slurp:
+        src: "{{ ssh_key_path }}.pub"
+      register: public_key_content
+
+    - name: Display public SSH key
+      debug:
+        msg: |
+          Your SSH public key:
+          {{ public_key_content.content | b64decode }}
+
